@@ -90,3 +90,39 @@ export async function updateNote(req: AuthenticatedRequest, res: Response) {
     return res.status(500).json({ message: (err as Error).message });
   }
 }
+
+export async function deleteNote(req: AuthenticatedRequest, res: Response) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+    const { id } = req.params;
+
+    if (isConnectedToDb) {
+      let note = await Note.findOneAndDelete({ _id: id, userId });
+      if (!note) {
+        // Try searching by problemId or problem number if valid
+        note = await Note.findOneAndDelete({ problemId: id, userId });
+      }
+      if (!note && !isNaN(Number(id))) {
+        const problem = await Problem.findOne({ number: Number(id) });
+        if (problem) {
+          note = await Note.findOneAndDelete({ problemId: problem._id, userId });
+        }
+      }
+      if (!note) {
+        const exists = await Note.findById(id);
+        if (exists) {
+          return res.status(403).json({ message: 'Forbidden: You do not own this note.' });
+        }
+        return res.status(404).json({ message: 'Note not found' });
+      }
+      return res.json({ message: 'Note deleted successfully', noteId: note._id });
+    } else {
+      return res.json({ message: 'Note deleted successfully' });
+    }
+  } catch (err) {
+    return res.status(500).json({ message: (err as Error).message });
+  }
+}

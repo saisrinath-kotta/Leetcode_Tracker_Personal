@@ -42,6 +42,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+const IndexRedirect = () => {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-muted-foreground gap-2">
+        <span className="text-sm font-medium">Loading session...</span>
+      </div>
+    );
+  }
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />;
+};
+
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -52,7 +64,7 @@ export function App() {
             <Route path="/register" element={<RegisterPage />} />
 
             <Route path="/" element={<AppShell />}>
-              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route index element={<IndexRedirect />} />
               <Route
                 path="dashboard"
                 element={
@@ -121,7 +133,7 @@ export function App() {
               />
             </Route>
 
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<IndexRedirect />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

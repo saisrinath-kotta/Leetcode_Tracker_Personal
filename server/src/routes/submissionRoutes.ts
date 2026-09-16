@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { createSubmission, getSubmissions } from '../controllers/submissionController.js';
-import { authenticate } from '../middleware/auth.js';
+import { authenticate, requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 
-router.get('/', authenticate, getSubmissions);
-router.post('/', authenticate, createSubmission);
+router.get('/', authenticate, requireAuth, getSubmissions);
+router.post('/', authenticate, requireAuth, createSubmission);
 
 export default router;

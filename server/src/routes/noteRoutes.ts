@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import { getNotes, getNoteByProblemId, updateNote } from '../controllers/noteController.js';
-import { authenticate } from '../middleware/auth.js';
+import { getNotes, getNoteByProblemId, updateNote, deleteNote } from '../controllers/noteController.js';
+import { authenticate, requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 
-router.get('/', authenticate, getNotes);
-router.get('/:problemId', authenticate, getNoteByProblemId);
-router.put('/:problemId', authenticate, updateNote);
+router.get('/', authenticate, requireAuth, getNotes);
+router.get('/:problemId', authenticate, requireAuth, getNoteByProblemId);
+router.put('/:problemId', authenticate, requireAuth, updateNote);
+router.delete('/:id', authenticate, requireAuth, deleteNote);
 
 export default router;
