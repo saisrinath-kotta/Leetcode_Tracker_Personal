@@ -8,15 +8,15 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 
 export async function getDashboard(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = req.user?.id || '660000000000000000000001';
+    const userId = req.user?.id;
 
     let totalProblemsCount = 500;
     let activeDatabaseCount = 500;
     let solvedCount = 0;
     let attemptedCount = 0;
     let inProgressCount = 0;
-    let currentStreak = 5;
-    let bestStreak = 12;
+    let currentStreak = 0;
+    let bestStreak = 0;
     let dailyGoal = 2;
 
     let easyTotal = 239;
@@ -28,7 +28,7 @@ export async function getDashboard(req: AuthenticatedRequest, res: Response) {
 
     let totalSubmissions = 0;
     let acceptedSubmissions = 0;
-    let accuracyRate = 100;
+    let accuracyRate = 0;
 
     let activeProblem: any = null;
     let recentProblems: any[] = [];
@@ -56,7 +56,7 @@ export async function getDashboard(req: AuthenticatedRequest, res: Response) {
       mediumTotal = await Problem.countDocuments({ difficulty: 'Medium' });
       hardTotal = await Problem.countDocuments({ difficulty: 'Hard' });
 
-      const progressList = await UserProgress.find({ userId }).populate('problemId').lean();
+      const progressList = userId ? await UserProgress.find({ userId }).populate('problemId').lean() : [];
 
       solvedCount = progressList.filter((p) => p.status === 'Solved').length;
       attemptedCount = progressList.filter((p) => p.status === 'Attempted').length;
@@ -67,9 +67,9 @@ export async function getDashboard(req: AuthenticatedRequest, res: Response) {
       hardSolved = progressList.filter((p) => p.status === 'Solved' && (p.problemId as any)?.difficulty === 'Hard').length;
 
       // Submissions accuracy calculation
-      totalSubmissions = await Submission.countDocuments({ userId });
-      acceptedSubmissions = await Submission.countDocuments({ userId, status: 'Accepted' });
-      accuracyRate = totalSubmissions > 0 ? Math.round((acceptedSubmissions / totalSubmissions) * 100) : 100;
+      totalSubmissions = userId ? await Submission.countDocuments({ userId }) : 0;
+      acceptedSubmissions = userId ? await Submission.countDocuments({ userId, status: 'Accepted' }) : 0;
+      accuracyRate = totalSubmissions > 0 ? Math.round((acceptedSubmissions / totalSubmissions) * 100) : 0;
 
       // Active problem: most recently attempted
       const sortedByActivity = [...progressList].sort((a, b) => {

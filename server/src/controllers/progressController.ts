@@ -7,14 +7,16 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 
 export async function getProgress(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = req.user?.id || '660000000000000000000001';
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.json({ progress: [] });
+    }
 
     if (isConnectedToDb) {
       const progressList = await UserProgress.find({ userId }).populate('problemId', 'number title difficulty topics patterns').lean();
       return res.json({ progress: progressList });
     } else {
-      const list = Array.from(memoryProgress.values());
-      return res.json({ progress: list });
+      return res.json({ progress: [] });
     }
   } catch (err) {
     return res.status(500).json({ message: (err as Error).message });
@@ -23,15 +25,17 @@ export async function getProgress(req: AuthenticatedRequest, res: Response) {
 
 export async function getProgressByProblemId(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = req.user?.id || '660000000000000000000001';
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.json({ progress: null });
+    }
     const { problemId } = req.params;
 
     if (isConnectedToDb) {
       const pr = await UserProgress.findOne({ userId, problemId }).lean();
       return res.json({ progress: pr || null });
     } else {
-      const pr = memoryProgress.get(`${userId}_${problemId}`);
-      return res.json({ progress: pr || null });
+      return res.json({ progress: null });
     }
   } catch (err) {
     return res.status(500).json({ message: (err as Error).message });
@@ -40,7 +44,10 @@ export async function getProgressByProblemId(req: AuthenticatedRequest, res: Res
 
 export async function updateProgress(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = req.user?.id || '660000000000000000000001';
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
     const { problemId } = req.params;
     const { status, confidence, notes, mistakes, personalCode, language, code, hintsUsed } = req.body;
 

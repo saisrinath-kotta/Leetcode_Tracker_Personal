@@ -10,7 +10,10 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 
 export async function createSubmission(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = req.user?.id || '660000000000000000000001';
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
     const { problemId, language, code, isRunOnly } = req.body;
 
     if (!problemId || !code) {
@@ -135,7 +138,10 @@ export async function createSubmission(req: AuthenticatedRequest, res: Response)
 
 export async function getSubmissions(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = req.user?.id || '660000000000000000000001';
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.json({ submissions: [] });
+    }
     const problemId = req.query.problemId as string;
 
     if (isConnectedToDb) {

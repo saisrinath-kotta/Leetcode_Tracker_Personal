@@ -1,7 +1,9 @@
 import React from 'react';
-import { Search, Sun, Moon, Menu, User as UserIcon, Laptop } from 'lucide-react';
+import { Search, Sun, Moon, Menu, User as UserIcon, Laptop, LogOut } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { Breadcrumbs } from './Breadcrumbs';
+import { useAuth } from '../../context/AuthContext';
 
 interface HeaderProps {
   onOpenMobileMenu: () => void;
@@ -16,6 +18,17 @@ export const Header: React.FC<HeaderProps> = ({
   theme,
   onToggleTheme,
 }) => {
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  const displayName = user?.username || 'Guest';
+  const initials = displayName.substring(0, 2).toUpperCase();
+
   return (
     <header className="h-16 border-b border-border/80 bg-card/40 backdrop-blur-md sticky top-0 z-20 flex items-center justify-between px-4 lg:px-8 select-none">
       <div className="flex items-center gap-3">
@@ -64,15 +77,35 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </Button>
 
-        {/* User Profile Avatar */}
+        {/* User Profile Avatar / Sign In */}
         <div className="flex items-center gap-2 pl-2 border-l border-border/60">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
-            <UserIcon className="w-4 h-4" />
-          </div>
-          <div className="hidden sm:flex flex-col text-left">
-            <span className="text-xs font-semibold leading-none text-foreground">Sai</span>
-            <span className="text-[10px] text-muted-foreground mt-0.5 font-mono">Master Plan</span>
-          </div>
+          {isAuthenticated ? (
+            <>
+              <Link to="/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                  {initials}
+                </div>
+                <div className="hidden sm:flex flex-col text-left">
+                  <span className="text-xs font-semibold leading-none text-foreground">{displayName}</span>
+                  <span className="text-[10px] text-emerald-400 mt-0.5 font-mono">Active Session</span>
+                </div>
+              </Link>
+              <button
+                onClick={handleLogout}
+                title="Log Out"
+                aria-label="Log Out"
+                className="p-1.5 ml-1 rounded-lg text-muted-foreground hover:text-rose-400 hover:bg-rose-950/20 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </>
+          ) : (
+            <Link to="/login">
+              <Button variant="primary" size="sm" className="text-xs">
+                Sign In
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </header>

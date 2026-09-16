@@ -7,7 +7,10 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 
 export async function generatePracticeSession(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = req.user?.id || '660000000000000000000001';
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
     const { topics = [], difficulty = '', patterns = [], count = 3 } = req.body;
 
     let selectedProblems: any[] = [];

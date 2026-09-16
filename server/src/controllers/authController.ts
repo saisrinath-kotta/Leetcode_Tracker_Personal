@@ -30,6 +30,7 @@ export async function register(req: AuthenticatedRequest, res: Response) {
     res.cookie('token', token, {
       httpOnly: true,
       secure: config.nodeEnv === 'production',
+      sameSite: config.nodeEnv === 'production' ? 'none' : 'lax',
       maxAge: 7 * 86400000,
     });
 
@@ -64,7 +65,7 @@ export async function login(req: AuthenticatedRequest, res: Response) {
         return res.status(401).json({ message: 'Invalid credentials.' });
       }
     } else {
-      user = { _id: '660000000000000000000001', username: 'demo_user', email: email || 'demo@dsamaster.dev' };
+      return res.status(401).json({ message: 'Database connection offline.' });
     }
 
     const token = jwt.sign({ id: user._id, username: user.username, email: user.email }, config.jwtSecret, {
@@ -74,6 +75,7 @@ export async function login(req: AuthenticatedRequest, res: Response) {
     res.cookie('token', token, {
       httpOnly: true,
       secure: config.nodeEnv === 'production',
+      sameSite: config.nodeEnv === 'production' ? 'none' : 'lax',
       maxAge: 7 * 86400000,
     });
 
@@ -91,7 +93,11 @@ export async function login(req: AuthenticatedRequest, res: Response) {
 }
 
 export async function logout(req: AuthenticatedRequest, res: Response) {
-  res.clearCookie('token');
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: config.nodeEnv === 'production',
+    sameSite: config.nodeEnv === 'production' ? 'none' : 'lax',
+  });
   return res.json({ message: 'Logged out successfully.' });
 }
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Code2, UserPlus, Lock, Mail, User } from 'lucide-react';
-import { apiRequest } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 
@@ -12,16 +12,14 @@ export const RegisterPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
     try {
-      await apiRequest('/auth/register', {
-        method: 'POST',
-        body: JSON.stringify({ username, email, password }),
-      });
+      await register(username, email, password);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Registration failed.');

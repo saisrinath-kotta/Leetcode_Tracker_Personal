@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Code2, LogIn, Lock, Mail } from 'lucide-react';
-import { apiRequest } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 
@@ -11,16 +11,14 @@ export const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
     try {
-      await apiRequest('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-      });
+      await login(email, password);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Login failed.');
@@ -34,13 +32,10 @@ export const LoginPage: React.FC = () => {
     setPassword('password123');
     setIsLoading(true);
     try {
-      await apiRequest('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email: 'demo@dsamaster.dev', password: 'password123' }),
-      });
+      await login('demo@dsamaster.dev', 'password123');
       navigate('/dashboard');
-    } catch {
-      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Demo login failed.');
     } finally {
       setIsLoading(false);
     }

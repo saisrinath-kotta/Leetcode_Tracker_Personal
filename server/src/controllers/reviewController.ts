@@ -7,7 +7,10 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 
 export async function getReviewQueue(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = req.user?.id || '660000000000000000000001';
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.json({ reviewItems: [] });
+    }
 
     if (isConnectedToDb) {
       const progressList = await UserProgress.find({ userId }).populate('problemId').lean();
