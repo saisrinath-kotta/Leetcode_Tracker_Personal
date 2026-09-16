@@ -1,4 +1,6 @@
-const API_BASE = '/api';
+const RAW_API_URL = import.meta.env.VITE_API_URL || '';
+const CLEAN_BASE = RAW_API_URL.replace(/\/$/, '');
+const API_BASE = CLEAN_BASE ? (CLEAN_BASE.endsWith('/api') ? CLEAN_BASE : `${CLEAN_BASE}/api`) : '/api';
 
 export async function apiRequest<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const defaultHeaders: Record<string, string> = {
